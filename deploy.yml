@@ -1,0 +1,41 @@
+# ชื่อของ Workflow ที่จะแสดงในหน้า Actions ของ GitHub
+name: Deploy to Firebase Hosting
+
+# กำหนดให้ Workflow นี้ทำงานเมื่อมีการ push โค้ดไปยัง branch 'main'
+on:
+  push:
+    branches:
+      - main # หรือ master ตามชื่อ branch หลักของคุณ
+
+# ขั้นตอนการทำงาน (Jobs)
+jobs:
+  build_and_deploy:
+    # กำหนดให้รันบนเซิร์ฟเวอร์ Ubuntu เวอร์ชั่นล่าสุด
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout โค้ดจาก Repository ของคุณ
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. ตั้งค่า Node.js (ถ้าโปรเจกต์ของคุณต้องมีการ build)
+      # หากเว็บของคุณเป็น HTML/CSS/JS ธรรมดา ข้ามขั้นตอนนี้และขั้นตอนถัดไปได้
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # ระบุเวอร์ชัน Node.js ที่คุณใช้
+
+      # 3. ติดตั้ง Dependencies และ Build โปรเจกต์
+      # หากเว็บของคุณเป็น HTML ธรรมดา ข้ามขั้นตอนนี้ไปได้
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build # หรือคำสั่ง build อื่นๆ ของคุณ
+
+      # 4. Deploy ไปยัง Firebase Hosting
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live # Deploy ขึ้น Production
+          projectId: farmh-688a7 # << แก้ไขเป็น Project ID ของคุณ
